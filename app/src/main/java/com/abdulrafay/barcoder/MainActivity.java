@@ -1,8 +1,8 @@
 package com.abdulrafay.barcoder;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.print.PrintHelper;
 
-import android.content.DialogInterface;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.util.Log;
@@ -17,13 +17,13 @@ import com.google.zxing.BarcodeFormat;
 import com.google.zxing.WriterException;
 import com.google.zxing.common.BitMatrix;
 
-import java.io.Console;
-
 public class MainActivity extends AppCompatActivity {
 
     ImageView codeViewer;
     Button GenBtn;
+    Button PrinterBtn;
     EditText InputTxt;
+    Bitmap BarcodeBitMap;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -31,21 +31,30 @@ public class MainActivity extends AppCompatActivity {
 
         codeViewer =  findViewById(R.id.barcodeView);
         GenBtn = (Button) findViewById(R.id.GenerateButton);
+        PrinterBtn = (Button) findViewById(R.id.PrintBtn) ;
         InputTxt = (EditText) findViewById(R.id.CodeTxt);
         GenBtn.setOnClickListener( new View.OnClickListener() {
+            @Override
             public void onClick(View v) {
 
                 Log.d("a",InputTxt.getText().toString());
                 BitMatrix bit = GenerateBarcode(InputTxt.getText().toString());
                 if(bit != null) {
-                    Bitmap bitmap = Bitmap.createBitmap(codeViewer.getWidth(), codeViewer.getHeight(), Bitmap.Config.RGB_565);
+                    BarcodeBitMap = Bitmap.createBitmap(codeViewer.getWidth(), codeViewer.getHeight(), Bitmap.Config.RGB_565);
                     for (int i = 0; i < codeViewer.getWidth(); i++) {
                         for (int j = 0; j < codeViewer.getHeight(); j++) {
-                            bitmap.setPixel(i, j, bit.get(i, j) ? Color.BLACK : Color.WHITE);
+                            BarcodeBitMap.setPixel(i, j, bit.get(i, j) ? Color.BLACK : Color.WHITE);
                         }
                     }
-                    codeViewer.setImageBitmap(bitmap);
+                    codeViewer.setImageBitmap(BarcodeBitMap);
                 }
+            }
+        });
+
+        PrinterBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                PrintImage();
             }
         });
 
@@ -63,5 +72,12 @@ public class MainActivity extends AppCompatActivity {
             e.printStackTrace();
         }
         return null;
+    }
+
+    public void PrintImage()
+    {
+        PrintHelper photoPrinter = new PrintHelper(this);
+        photoPrinter.setScaleMode(PrintHelper.SCALE_MODE_FIT);
+        photoPrinter.printBitmap("barcode-print test", BarcodeBitMap);
     }
 }
